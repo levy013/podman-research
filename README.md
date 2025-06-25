@@ -1,7 +1,9 @@
 ## Podman R&D
+https://uit1446:9090/podman
 
 ### Workflow
-https://uit1446:9090/podman
+- Build image for app locally and push to remote server.
+- In the future we can try leveraging auto updates for automatic rollouts on containers running specific images.
 
 ## Step 1: Install Podman Locally
 Podman must be installed on the host machine where the application(s) are built, as well as remotely on the server where the containers will run: https://podman.io/
@@ -14,6 +16,8 @@ On Windows, Podman runs inside of a WSL2 container, but you can still communicat
 
 ## Step 2: Create a Dockerfile 
 Here's an example dockerfile for `CAD.MQ.API`
+> I let Rider create one for me and then I made modifications as necessary.
+
 ```dockerfile
 # Set up .NET runtime env
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
@@ -40,8 +44,6 @@ COPY --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "CAD.MQ.API.dll"]
 ```
-> I let Rider create one for me and then I made modifications as necessary.
-
 ### Super High-Level explanation of a dockerfile
 
 Dockerfiles are powerful because they leverage a concept called `layered caching` to efficiently build images of an application. Without caching, we would need to do things like reinstall dependencies and recompile the source code every single time we rebuild an image 🫣
