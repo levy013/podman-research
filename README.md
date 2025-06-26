@@ -115,14 +115,11 @@ podman run -d -p 8080:8080 --name cmqapi localhost/cmqapi:latest
 > 
 > --name: name of container
 
-
-### Considerations
-1. Generalized CAD user to manage apps?
-2. Are images automatically refreshed when we load a new one
-3. Can we compile all of these commands into a rollout script on local? Can we set up a listener in systemd on uit1446 to respond to the new image and load it and auto update?
-4. Better place to save .tar? right now it's just dropped into CAD24x7 so we need to remove it. Win doesn't do like a /tmp dir where files are auto cleared. But maybe we don't want that? Maybe we do want to add a directory somewhere to stored compressed images like this.
-
-
 ### TODOs 
-1. We're hardcoding the values in Config.cs as opposed to reading from CADConfig.json - need to fix this. Without hardcoding, the server had a hard time looking up the values for the key(s) 
+- [ ] Generalized CAD user to manage apps? Right now everything I'm doing is under my user and home dir
+- [ ] Can we compile all of these commands into a rollout script on local?
+- [ ] Look into auto-update
+- [ ] Better place to save .tar? Right now it's just dropped into /CAD24x7 so we need to remove it. Win doesn't do like a /tmp dir where content is purged on reboot. But maybe we don't want that? Maybe we do want to add a directory somewhere to stored compressed images like this.
+- [ ] We're hardcoding the values in Config.cs as opposed to reading from CADConfig.json - need to fix this. Without hardcoding, the server had a hard time looking up the values for the key(s)
+- [ ] Private Nuget packages aren't pulled down in the docker build process. We need to include a nuget.config file to identify the private stream via URL and credentials.
 
