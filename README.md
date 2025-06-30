@@ -96,14 +96,14 @@ podman save -o cmqapi.tar localhost/cmqapi:latest`
 
 4. Push to uit1446:
 ```bash
-scp cmqapi.tar lev013@uit1446.govt.hcg.local:/home/lev013`
+scp cmqapi.tar lev013@uit1446.govt.hcg.local:/home/lev013
 ```
 
 ## Step 4: Start App in Container
 1. Open terminal and cd to dir containing image .tar
 2. Load image from .tar:
 ```bash
-podman load -i cmqapi.tar`
+podman load -i cmqapi.tar
 ```
 3. Start container
 ```bash
@@ -120,6 +120,12 @@ podman run -d -p 8080:8080 --name cmqapi localhost/cmqapi:latest
 - [ ] Can we compile all of these commands into a rollout script on local?
 - [ ] Look into auto-update
 - [ ] Better place to save .tar? Right now it's just dropped into /CAD24x7 so we need to remove it. Win doesn't do like a /tmp dir where content is purged on reboot. But maybe we don't want that? Maybe we do want to add a directory somewhere to stored compressed images like this.
-- [ ] We're hardcoding the values in Config.cs as opposed to reading from CADConfig.json - need to fix this. Without hardcoding, the server had a hard time looking up the values for the key(s)
 - [ ] Private Nuget packages aren't pulled down in the docker build process. We need to include a nuget.config file to identify the private stream via URL and credentials.
+- [ ] - Jake: Application URL’s
+- [ ] - Jake: Install Podman GUI and work
+- [ ] - Jake: Emulate dev cycle workflow all the way to rollout
+- [ ] - Jake: Look into Container auto starting after server patching/restarting
+- [ ] - Jonathan: Re-image uit1446
+- [ ] - Jake: Emulate dev cycle workflow all the way to rollout
+- [x] - Jake: Figure out CADConfig.json
 
