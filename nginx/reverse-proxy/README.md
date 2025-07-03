@@ -1,19 +1,29 @@
-## Reverse Proxy
+# Reverse Proxy
 
 🔗 *[Starting an App in a Container](https://github.com/levy013/podman-research?tab=readme-ov-file#step-4-start-app-in-container)*
 
 🔗 *[Installing Nginx]()*
 
-### Use Case: 
-Our containers are accessible from the server's hostname on the ports that we choose to specify when running. 
-We've set up our server to listen for requests matching a particular shape so that we can forward it to a particular destination.
-A reverse proxy will allow us to specify a server name and endpoint for users to reach out to
+## What is a reverse proxy?
+*A reverse proxy acts as an intermediary between clients and servers. They intercept client requests and forward them to the appropriate backend service.*
+https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/
 
-Here is an example for setting up CAD.MQ 
-- Our application is running on the server under http://localhost:8080/ 
-- Clients can make requests to http://uit1446:8080/
-- We want them to be able use a more accessible URI, such as http://cadlnx/mq/
+## Use Case: 
+By default, our applications are accessible from the server's hostname on the ports that we choose to expose when running the containers.
+e.g. we expose port 8080 on uit1446 to serve CAD.MQ.API => http://uit1446:8080/api/list
 
+But this is admittedly pretty obnoxious for the client to use effectively.
+
+Assuming we've set up some DNS entries on the local network (or modified our Hosts file), we can use Nginx to bind our apps to those addresses on the server and serve our content from an "alias".
+
+A reverse proxy will allow us to specify both a hostname and it's related path(s) for the client to reach out to. This maintains a consistent "shape" for the request to take on that Nginx can subsequently match against and proxy to the corresponding resource on the server.
+
+Here is an example using CAD.MQ.API
+- Our application is running on the server exposed on http://localhost:8080/ 
+- Clients can natively make requests to the service on http://uit1446:8080/
+- With a reverse proxy we can offer the client a prettier URI, such as http://cadlnx/mq/
+
+## Setup:
 1. Set up custom conf inside of `/etc/nginx/conf.d/`
 >  Instead of modifying `/etc/nginx/nginx.conf` directly, it's generally considered best practice to create a custom conf inside of `/conf.d`
 >
@@ -40,13 +50,13 @@ server {
         }
 } 
 ```
-📝 A note about `rewrite ^/mq/(.*)$ /$1 break;`
+📝 Understanding `rewrite ^/mq/(.*)$ /$1 break;`
 > *It's important to remember that we're simply proxying traffic here. The idea behind this rewrite is that we need to strip /mq/ from the URI and reappend any parameters from the capture group.*
 >
 > Again, we're essentially just creating a pretty URL for the client to leverage.
->
->    - the client sees http://cadlnx/mq/scalar
->    - the server sees http://127.0.0.1:8080/scalar
+>    - The client requests http://cadlnx/mq/scalar
+>    - Nginx intercepts and massages the request
+>    - The server responds with the resource found at http://127.0.0.1:8080/scalar
 >
 > The regex is relatively straightforward as well
 >    - ^/mq/ : match only if we're at the beginning of the URI, so http://cadlnx/mq will match but http://cadlnx/foo/mq will not
