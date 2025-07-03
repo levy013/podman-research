@@ -1,41 +1,55 @@
 ## Reverse Proxy
-### Problem: 
+
+🔗 *[Starting an App in a Container](https://github.com/levy013/podman-research?tab=readme-ov-file#step-4-start-app-in-container)*
+
+🔗 *[Installing Nginx]()*
+
+### Use Case: 
 Our containers are accessible from the server's hostname on the ports that we choose to specify when running. 
-
-> See *[Starting an App in a Container](https://github.com/levy013/podman-research?tab=readme-ov-file#step-4-start-app-in-container)*
-
+We've set up our server to listen for requests matching a particular shape so that we can forward it to a particular destination.
 A reverse proxy will allow us to specify a server name and endpoint for users to reach out to
 
-Here is an example for resolving http://uit1446:8080/scalar under http://cadlnx/mq/scalar
+Here is an example for setting up CAD.MQ 
+- Our application is running on the server under http://localhost:8080/ 
+- Clients can make requests to http://uit1446:8080/
+- We want them to be able use a more accessible URI, such as http://cadlnx/mq/
 
-1. Install Nginx
-sudo dnf install nginx
-sudo systemctl enable --now nginx
-sudo firewall-cmd --add-service=http --permanent
-sudo firewall-cmd --reload
-2. Set up custom conf inside /etc/nginx/conf.d/
-3. Add RP logic
+1. Set up custom conf inside of `/etc/nginx/conf.d/`
+>  Instead of modifying `/etc/nginx/nginx.conf` directly, it's generally considered best practice to create a custom conf inside of `/conf.d`
+>
+> In this example, we're writing to `/etc/nginx/conf.d/cad.conf`
+
+2. Add the reverse proxy config
 ```nginx
 server { 
-        listen 80; 
-        server_name cadlnx; 
+        listen 80; # what port Nginx should listen on
+        server_name cadlnx; # what hostname the following location block(s) should respond to
          
-        location /mq/ { 
+        location /mq/ { # location block containing rules/logic for handling requests to http://cadlnx/mq/*
                 rewrite ^/mq/(.*)$ /$1 break; 
-                proxy_pass http://127.0.0.1:8080;
+                proxy_pass http://127.0.0.1:8080; # underlying address we're proxying traffic to 
 
-                # generic reverse proxy set_header directives 
-                proxy_set_header Host $host; 
-                proxy_set_header X-Real-IP $remote_addr; 
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
-                proxy_set_header X-Forwarded-Proto $scheme; 
-        } 
+                proxy_set_header Host $host; # retains original host value e.g. cadlnx
+                proxy_set_header X-Real-IP $remote_addr; # client's real IP addr 
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # full chain of fwd IPs
+                proxy_set_header X-Forwarded-Proto $scheme; # http or https 
+        }
+
+        location /foo/ { # e.g. some other location block for handling http://cadlnx/foo/
+                ...
+        }
 } 
 ```
-4. Update SELinux policy? Check via getsebool httpd_can_network_connect
-sudo setsebool -P httpd_can_network_connect 1
-OR 
-sudo setsebool -P httpd_can_network_relay 1
-sudo systemctl reload nginx
-
-Look into this more
+📝 A note about `rewrite ^/mq/(.*)$ /$1 break;`
+> *It's important to remember that we're simply proxying traffic here. The idea behind this rewrite is that we need to strip /mq/ from the URI and reappend any parameters from the capture group.*
+>
+> Again, we're essentially just creating a pretty URL for the client to leverage.
+>
+>    - the client sees http://cadlnx/mq/scalar
+>    - the server sees http://127.0.0.1:8080/scalar
+>
+> The regex is relatively straightforward as well
+>    - ^/mq/ : match only if we're at the beginning of the URI, so http://cadlnx/mq will match but http://cadlnx/foo/mq will not
+>    - (.*) : wildcard for capture group
+>    - $ : anchor to match end of string
+>    - /$1 : replacement to append parameters from capture group to '/'
