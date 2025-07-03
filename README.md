@@ -118,10 +118,9 @@ podman run -d -p 8080:8080 --name cmqapi localhost/cmqapi:latest
 ### TODOs 
 - [ ] Generalized CAD user to manage apps? Right now everything I'm doing is under my user and home dir
 - [ ] Can we compile all of these commands into a rollout script on local?
-- [ ] Look into auto-update
 - [ ] Better place to save .tar? Right now it's just dropped into /CAD24x7 so we need to remove it. Win doesn't do like a /tmp dir where content is purged on reboot. But maybe we don't want that? Maybe we do want to add a directory somewhere to stored compressed images like this.
 - [ ] Private Nuget packages aren't pulled down in the docker build process. We need to include a nuget.config file to identify the private stream via URL and credentials.
-- [ ] - Jake: Application URL’s
+- [x] - Jake: Application URL’s
 - [ ] - Jake: Install Podman GUI and work
 - [ ] - Jake: Emulate dev cycle workflow all the way to rollout
 - [ ] - Jake: Look into Container auto starting after server patching/restarting
